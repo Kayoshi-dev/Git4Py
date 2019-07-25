@@ -59,7 +59,7 @@ def setupDatabase():
         with open('config.ini', 'r+') as f:
             for line in f:
                 if '[database]' in line:
-                    print('Your Database in already linked.')
+                    print('Your Database is already linked.')
                     break
             else:
                 try:
@@ -78,6 +78,14 @@ def setupDatabase():
                                          'user =' + user + '\n'
                                          'password =' + password + '\n')
                             config.close()
+
+                            if glob.glob('*.sql'):
+                                importDatabase()
+                            else:
+                                #   TODO
+                                print('Our parser did not find any .sql file to automatically import,'
+                                      ' do you want to retry or skip this step ?')
+
                             break
                         if response == 'N':
                             config.write('[database] \n'
@@ -90,12 +98,27 @@ def setupDatabase():
                     print('-------------------------------------')
                 except (OSError, IOError) as e:
                     print(e.returncode)
+
     else:
         try:
             open('config.ini', 'w+')
         except (OSError, IOError) as e:
             print(e.returncode)
         setupDatabase()
+
+
+def importDatabase():
+    dbimport = None
+    while dbimport != 'Y' or dbimport != 'N':
+        dbimport = input('We have found a SQL file in your directory, '
+                         'would you like to automatically import it ? (Y/N)').upper()
+        if dbimport == 'Y':
+            print('Yes!')
+            break
+        if dbimport == 'N':
+            print('No!')
+            break
+
 
 #   This function clone a repository
 def gitClone():
