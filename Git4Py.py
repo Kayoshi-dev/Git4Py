@@ -25,8 +25,11 @@ def gitMain():
 
     print('-------------------------------------')
 
-    FirstUse()
-
+    if not os.path.exists(os.getcwd() + os.sep + 'config.ini'):
+        FirstUse()
+    else:
+        print('todo')
+        #   TODO ELSE STATEMENT
 
 #   This function is automatically called when the script is used for the first time
 def FirstUse():
@@ -34,7 +37,7 @@ def FirstUse():
     while responseRepo != 'Y' or responseRepo != 'N':
         responseRepo = input('Would you like to attach this script to your Github repository ? (Y/N)').upper()
         if responseRepo == 'Y':
-            urlRepo = input('Please paste the link to your Github repository :')
+            urlRepo = input('Please paste the link to your Github repository : ')
             print('Creating a new config file... ⌛')
             config = open('config.ini', 'w+')
             config.write('[Repository] \n'
@@ -46,8 +49,9 @@ def FirstUse():
         if responseRepo == 'N':
             print('Note that most of the functionalities will not work without your URL repository')
             config = open('config.ini', 'w+')
-            config.write('[repository] \n'
-                         'urlRepo = \n \n')
+            config.write('[repository]\n'
+                         'urlRepo=\n \n')
+            config.close()
             print('-------------------------------------')
             break
     setupDatabase()
@@ -60,6 +64,8 @@ def setupDatabase():
             for line in f:
                 if '[database]' in line:
                     print('Your Database is already linked.')
+                    if glob.glob('*.sql'):
+                        importDatabase()
                     break
             else:
                 try:
@@ -73,32 +79,37 @@ def setupDatabase():
                             host = input('Host :')
                             user = input('User :')
                             password = input('Password :')
-                            config.write('[database] \n'
-                                         'host =' + host + '\n'
-                                         'user =' + user + '\n'
-                                         'password =' + password + '\n')
+                            config.write('[database]\n'
+                                         'host=' + host + '\n'
+                                         'user=' + user + '\n'
+                                         'password=' + password + '\n')
                             config.close()
 
                             if glob.glob('*.sql'):
                                 importDatabase()
                             else:
-                                #   TODO
-                                print('Our parser did not find any .sql file to automatically import,'
-                                      ' do you want to retry or skip this step ?')
-
+                                parseResponse = None
+                                while parseResponse != 'Y' or parseResponse != 'N':
+                                    parseResponse = input('Our parser did not find any .sql file to automatically import,'
+                                      ' do you want to retry ?(you can skip this step) (Y/N)')
+                                    if parseResponse == 'Y':
+                                        setupDatabase()
+                                    if parseResponse == 'N':
+                                        print('You can always execute setupDatabase() later '
+                                              'if you want to import a new database.')
+                                        break
                             break
                         if response == 'N':
-                            config.write('[database] \n'
-                                         'host =\n'
-                                         'user =\n'
-                                         'password =\n')
+                            config.write('[database]\n'
+                                         'host=\n'
+                                         'user=\n'
+                                         'password=\n')
                             config.close()
                             break
                     print('Done! ✔')
                     print('-------------------------------------')
                 except (OSError, IOError) as e:
                     print(e.returncode)
-
     else:
         try:
             open('config.ini', 'w+')
